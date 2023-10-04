@@ -36,9 +36,10 @@ X86_64_ACCEL_ALLOW =["CONFIG_BMC150_ACCEL_I2C",
                      ]
 
 class GitManager:
-    def __init__(self, committer, email):
+    def __init__(self, committer, email, teardown=False):
         self.committer = committer
         self.email = email
+        self.teardown = teardown
 
         try:
             path = os.getcwd()
@@ -50,7 +51,9 @@ class GitManager:
 
         # switch to working branch
         try:
-            self.repo.git.checkout(b="wip/driver/reduction")
+            branch = self.repo.active_branch
+            self.base_branch = branch.name
+            self.repo.git.checkout(b="wip/driver/unused_iio_accel")
         except Exception as e:
             print(e)
             sys.exit(1)
@@ -66,7 +69,7 @@ class GitManager:
         self.repo.index.add([os.path.join(ACCEL_CONFIG_X86_64_PATH, file)])
         commit_msg = ("Disable {}\n\nSince {}\n"
                      "wasn't required by x86, it was disabled.\n\n"
-                     "Singed-off-by: {}<{}>".format(file,
+                     "Signed-off-by: {}<{}>".format(file,
                                                     file,
                                                     self.committer,
                                                     self.email))
@@ -74,6 +77,10 @@ class GitManager:
 
         git_path = shutil.which("git")
         self.git_obj.execute([git_path, "format-patch", last_commit.hexsha])
+
+    def teardown_branch(self):
+        self.repo.git.checkout(self.base_branch)
+        self.repo.git.branch("-D", "wip/driver/unused_iio_accel")
 
 
 def disable_driver(file:str):
@@ -85,7 +92,6 @@ def disable_driver(file:str):
         # to disable the driver.
         if valid.match(lines[0]):
             with open(os.path.join(ACCEL_CONFIG_X86_64_PATH, file), "w") as x86:
-            #with open(os.path.join("/tmp", file), "w") as x86:
                 x86.write("# "+file+" is not set\n")
 
 def get_accel_config():
@@ -110,19 +116,31 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("committer", help="Committer name")
     parser.add_argument("email", help="Committer email")
+    parser.add_argument("--teardown",
+                        help="Delete the working branch (wip/driver/unused_iio_accel)",
+                        action="store_true")
     args = parser.parse_args()
 
-    git_m = GitManager(args.committer, args.email)
+    git_m = GitManager(args.committer, args.email, args.teardown)
 
     kconfig = get_accel_config()
-    #repo = Repo(os.getcwd())
 
+    print("IIO Accel config are found:")
+    for file in kconfig:
+        if os.path.isfile(os.path.join(ACCEL_CONFIG_PATH, file)):
+            print(file)
+
+    print("Start to scan the config files.")
     for file in os.listdir(ACCEL_CONFIG_PATH):
        if os.path.isfile(os.path.join(ACCEL_CONFIG_PATH, file)) and file in kconfig:
            if is_required(file) == False:
                print("{} is not required.".format(file))
                disable_driver(file)
                git_m.commit_patch(file)
+
+    #teardown the working branch
+    if args.teardown:
+        git_m.teardown_branch()
 
 if __name__ == "__main__":
     main()
