@@ -1,0 +1,20 @@
+{
+"name":"iio_accel",
+"driver_path":"drivers/iio/accel/",
+"redhat_config_path":"redhat/configs/fedora/generic",
+"redhat_x86_config_path":"redhat/configs/fedora/generic/x86",
+"allow_list":[
+"CONFIG_BMC150_ACCEL_I2C",
+"CONFIG_DA280",
+"CONFIG_HID_SENSOR_ACCEL_3D",
+"CONFIG_KXCJK1013",
+"CONFIG_MMA7660",
+"CONFIG_MMA8452",
+"CONFIG_MXC4005",
+"CONFIG_MXC6255",
+"CONFIG_IIO_ST_ACCEL_I2C_3AXIS",
+"CONFIG_IIO_ST_ACCEL_3AXIS",
+"CONFIG_BMC150_ACCEL"
+],
+"commit_msg":"Disable {{ config_name }} because this driver is not used on any x86 boards."
+}
