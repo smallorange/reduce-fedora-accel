@@ -14,7 +14,9 @@
 "CONFIG_MXC6255",
 "CONFIG_IIO_ST_ACCEL_I2C_3AXIS",
 "CONFIG_IIO_ST_ACCEL_3AXIS",
+"CONFIG_IIO_CROS_EC_ACCEL_LEGACY",
 "CONFIG_BMC150_ACCEL"
 ],
+"commit_title": "Disable {{ config_name }} for Fedora x86",
 "commit_msg":"Disable {{ config_name }} because this driver is not used on any x86 boards."
 }
