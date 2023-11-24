@@ -75,7 +75,7 @@ class GitManager:
             print(e)
             sys.exit(1)
 
-    def commit_patch(self, redhat_config_x86_path:str, file:str,
+    def commit_patch(self, redhat_config_x86_path:str, files:list,
                      commit_title:str, commit_template:str):
         last_commit = None
 
@@ -84,14 +84,15 @@ class GitManager:
             last_commit = commit
             break
 
-        self.repo.index.add([os.path.join(redhat_config_x86_path, file)])
-        template = self.environment.from_string(commit_title)
-        replaced_title = template.render(config_name=file)
+        for file in files:
+            self.repo.index.add([os.path.join(redhat_config_x86_path, file)])
+
         template = self.environment.from_string(commit_template)
-        replaced_msg = template.render(config_name=file)
+        file_names = ''.join([file + '\n' for file in files])
+        replaced_msg = template.render(config_list=file_names)
 
         commit_msg = ("{}\n\n"
-                      "{}".format(replaced_title,
+                      "{}".format(commit_title,
                                   replaced_msg))
         self.repo.index.commit(commit_msg)
 
@@ -141,6 +142,7 @@ def config_clean(gitobj, driver_path:str, redhat_config_path:str,
                  x86_redhat_config_path:str, allow_list:list,
                  commit_title:str, commit_template:str):
     kconfig = get_kconfig(driver_path, redhat_config_path)
+    file_list = []
 
     print("Start to scan the config files.")
     for file in os.listdir(redhat_config_path):
@@ -148,7 +150,9 @@ def config_clean(gitobj, driver_path:str, redhat_config_path:str,
            if is_required(file, allow_list) == False:
                print("{} is not required.".format(file))
                disable_driver(file, redhat_config_path, x86_redhat_config_path)
-               gitobj.commit_patch(x86_redhat_config_path, file, commit_title, commit_template)
+               file_list.append(file)
+
+    gitobj.commit_patch(x86_redhat_config_path, file_list, commit_title, commit_template)
 
 def main():
     parser = argparse.ArgumentParser()
