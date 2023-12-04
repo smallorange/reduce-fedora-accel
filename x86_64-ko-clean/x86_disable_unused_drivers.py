@@ -7,7 +7,7 @@
 # Usage:
 # 1. Create a JSON file in redhat/scripts/x86_allow folder.
 # 2. Run the script in the root of the kernel source tree.
-# redhat/scripts/x86_disable_unused_drivers.py "Committer" "committer@example.com"
+# redhat/scripts/x86_disable_unused_drivers.py allow_list_file
 
 import argparse
 import jinja2
