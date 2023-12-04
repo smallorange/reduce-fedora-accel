@@ -17,6 +17,6 @@
 "CONFIG_IIO_CROS_EC_ACCEL_LEGACY",
 "CONFIG_BMC150_ACCEL"
 ],
-"commit_title": "Disable drivers for Fedora x86",
-"commit_msg":"Disable the following drivers because they are not used on any x86 boards.\n{{ config_list }}"
+"commit_title":"Disable accel drivers for Fedora x86",
+"commit_msg":"Disable the following accel drivers because they are not used on any x86 boards.\n{{ config_list }}"
 }
